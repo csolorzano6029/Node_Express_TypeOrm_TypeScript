@@ -1,21 +1,35 @@
 import { EmployeeService } from '../services';
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 
 const employeeService = new EmployeeService();
+const employeeController = Router();
 
-export async function getEmployeeByEmail(req: Request, res: Response) {
-  const { email } = req.query as { email: string };
+employeeController.get(
+  '/',
+  async (req: Request, res: Response, next: NextFunction) => {
+    const employees = await employeeService.findAll();
 
-  try {
-    const employees = await employeeService.getEmployeeByEmail(email);
-    if (!employees) {
-      return res.status(404).json({ message: 'Empleado no encontrado' });
+    if (employees.length === 0) {
+      return res.status(404).json({ message: 'Empleados no encontrados' });
     }
 
     res.json(employees);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: 'Error al obtener empleado por correo electrónico' });
-  }
-}
+  },
+);
+
+employeeController.get(
+  '/email',
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { email } = req.query as { email: string };
+
+    const employee = await employeeService.getEmployeeByEmail(email);
+
+    if (!employee) {
+      return res.status(404).json({ message: 'Empleado no encontrado' });
+    }
+
+    res.json(employee);
+  },
+);
+
+export default employeeController;

@@ -14,6 +14,7 @@ export const responseInterceptor = (
   const originalSend = res.send;
   const originalJson = res.json;
   const statusCode = res.statusCode;
+  console.log(res.statusCode);
 
   res.send = function (body: any): Response<any, Record<string, any>> {
     if (!res.modifiedResponse) {
@@ -24,8 +25,6 @@ export const responseInterceptor = (
         data: body,
       };
 
-      console.log('Intercepted response.send():', body);
-      console.log('Intercepted response.send():', modifiedBody);
       res.modifiedResponse = true;
       return originalSend.call(this, modifiedBody);
     } else {
@@ -52,6 +51,35 @@ export const responseInterceptor = (
   next();
 };
 
+export const errorInterceptor = (
+  err: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  console.error('Error occurred:', err.message);
+
+  // Formatear el error como desees
+  const errorResponse = {
+    error: err.message,
+    name: err.name,
+  };
+
+  // Enviar el error de vuelta al cliente
+  res.status(500).json(errorResponse);
+};
+
+export const handleAsyncError = (handler: Function) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await handler(req, res, next);
+    } catch (error) {
+      console.log(res.statusCode);
+      next(error); // Pasar el error al siguiente middleware de manejo de errores
+    }
+  };
+};
+
 const getMessage = (req: Request, res: CustomResponse): string => {
   const response = res.locals.response;
   let message: string;
@@ -70,8 +98,11 @@ const getMessage = (req: Request, res: CustomResponse): string => {
       case 'DELETE':
         message = 'Deleted';
         break;
-      default:
+      case 'GET':
         message = 'Success';
+        break;
+      default:
+        message = 'Error';
     }
   }
 

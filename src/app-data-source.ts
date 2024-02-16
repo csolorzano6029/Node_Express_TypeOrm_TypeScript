@@ -1,7 +1,7 @@
-import { createConnection } from 'typeorm';
-import { EmployeeEntity } from './entities';
+import { DataSource } from 'typeorm';
+import { EmployeeEntity } from './entities/employee.entity';
 
-export const myDataSource = createConnection({
+const myDataSource = new DataSource({
   type: 'postgres',
   host: 'localhost',
   port: 5432,
@@ -12,5 +12,7 @@ export const myDataSource = createConnection({
   logging: true,
   synchronize: false,
 });
+
+myDataSource.initialize();
 
 export default myDataSource;

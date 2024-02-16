@@ -11,4 +11,8 @@ export class EmployeeService {
   async getEmployeeByEmail(email: string): Promise<EmployeeEntity> {
     return await this.employeeRepository.findEmployeeByEmail(email);
   }
+
+  async findAll(): Promise<EmployeeEntity[]> {
+    return await this.employeeRepository.findAll();
+  }
 }
